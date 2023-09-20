@@ -1,0 +1,10 @@
+{
+  "eslint.validate": ["javascript", "typescript"],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "code-runner.executorMap": {
+    "typescript": "node --loader ./ts-loader.js",
+    "cwd": "${workspaceFolder}"
+  },
+  "code-runner.runInTerminal": true
+}

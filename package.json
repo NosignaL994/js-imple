@@ -1,20 +1,28 @@
 {
-  "name": "practice",
+  "name": "js-imple",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A personal learning project to fork excellent frontend js code by hand writting.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "lodash",
+    "frontend",
+    "learn"
+  ],
+  "author": "ucinhow",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@types/node": "^18.7.18",
-    "@typescript-eslint/eslint-plugin": "^5.37.0",
-    "@typescript-eslint/parser": "^5.37.0",
-    "eslint": "^8.23.1",
-    "eslint-config-google": "^0.14.0"
+    "@types/node": "^18.17.17",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.28.0",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0"
+  },
+  "dependencies": {
+    "date-fns": "^2.29.3",
+    "simplify-chinese": "^1.2.0"
   }
 }

@@ -4,7 +4,6 @@
  */
 
 import { Noop, TimeoutId } from "@/typings";
-// import type { Timeout } from "node";
 
 /**
  * @param func function to be debounced
@@ -20,54 +19,84 @@ function debounce<F extends Noop>(func: F, delay: number, options?: Options) {
   let timerId: TimeoutId | undefined = undefined;
   let result: ReturnType<F>;
 
-  const lead = !!options && options.lead;
-  const trail = !!options && options.trail;
+  const lead = !!(options && options.lead);
+  const trail = !!((options && options.trail) ?? true);
   const delayLimit = options?.delayLimit;
+
+  const hitLead = () => timerId === undefined;
+  const hitTrail = (time: number) => !!(time - lastCallTime >= delay);
+  const hitLimit = (time: number) =>
+    !!(timerId && delayLimit) && time - lastRunTime >= delayLimit;
 
   const calcRemainWait = (time: number) => {
     return delay - (time - lastCallTime);
   };
 
   const run = () => {
+    // debounced function called at lease once after last running
     if (lastArgs === undefined) return;
+    // invoke func and clean the context to avoid running repeated
     lastRunTime = Date.now();
     result = func.apply(lastThis, lastArgs);
     lastThis = lastArgs = undefined;
   };
 
-  // check should run, run `func`, else new remain timeout
+  // check is trail, handle is or not
   const timeExpire = () => {
     const time = Date.now();
-    const sinceLastCall = time - lastCallTime;
-    const sinceLastRun = time - lastRunTime;
+    const isHitTrail = hitTrail(time);
 
-    // timeout of delay or timeout of delayLimit
-    const isDelayEnd =
-      sinceLastCall >= delay || (!!delayLimit && sinceLastRun >= delayLimit);
-    console.log("isDelayEnd: ", isDelayEnd, calcRemainWait(time));
-    // timeout is not over, continue the remain timeout
-    if (!isDelayEnd) {
+    // handle not hit trail, timeout is not over, continue the remain timeout
+    if (!isHitTrail) {
       timerId = setTimeout(timeExpire, calcRemainWait(time));
       return;
     }
 
-    // timeout is over, run `func` if trail setted true and debounced function called at lease on in the delay
-    if (trail && lastArgs) run();
+    // handle trail hitted, run `func` if trail setted true and debounced function called at lease once in the delay
     timerId = undefined;
+    if (trail) run();
+    // reset lastRunTime when trail as the end point of the delay
+    lastCallTime = lastRunTime = 0;
   };
 
   function debounced(this: ThisParameterType<F>, ...args: Parameters<F>) {
+    const now = Date.now();
     lastArgs = args;
-    lastCallTime = Date.now();
+    lastCallTime = now;
     lastThis = this;
 
-    if (lead && timerId === undefined) run();
+    const isHitLead = hitLead();
+    // handle hit lead
+    if (isHitLead) {
+      // set now time to lastRunTime as start point of the delay
+      lastRunTime = now;
+      if (lead) run();
+    }
 
+    const isHitLimit = hitLimit(now);
+    // handle hit limit, run func immediately
+    if (isHitLimit) run();
+
+    // set timeout timer
     if (timerId === undefined) timerId = setTimeout(timeExpire, delay);
 
     return result;
   }
 
+  function cancel() {
+    if (timerId !== undefined) {
+      clearTimeout(timerId);
+    }
+    lastRunTime = lastCallTime = 0;
+    lastArgs = lastThis = timerId = undefined;
+  }
+  function pending() {
+    return timerId !== undefined;
+  }
+  // function flush() {}
+
+  debounced.cancel = cancel;
+  debounced.pending = pending;
   return debounced;
 }
 
